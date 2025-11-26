@@ -19,7 +19,6 @@ You are an email classifier and extractor.
    - JSON must be valid.
 
 Example structure (include fields ONLY if present):
-
 {
   "is_relevant": true,
   "job_id": "GENERATE_UUID",
@@ -35,4 +34,4 @@ Example structure (include fields ONLY if present):
   "notes": "Found interview registration link"
 }
 
-EMAIL:
+EMAIL: {email_text_here}
