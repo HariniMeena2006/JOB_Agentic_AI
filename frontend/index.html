@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Agent Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+</head>
+  <body>
+    <div id="toast-container" aria-live="polite"></div>
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#6C63FF"/>
+            <path d="M16 8L22 12V20L16 24L10 20V12L16 8Z" fill="white"/>
+          </svg>
+          <h1>Job Agent</h1>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <div class="search-bar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+            <path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input type="text" placeholder="Search jobs, companies, locations..." id="searchInput" />
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="icon-button" id="filterBtn" aria-label="Filters">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 4h16M5 10h10M8 16h4" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="icon-button notifications" id="notificationsBtn" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 2a6 6 0 0 1 6 6v4l2 2v1H2v-1l2-2V8a6 6 0 0 1 6-6z" stroke-linejoin="round"/>
+            <path d="M8 17a2 2 0 0 0 4 0" stroke-linecap="round"/>
+          </svg>
+          <span class="badge">3</span>
+        </button>
+        <button class="user-avatar" id="userBtn" aria-label="User menu">
+          <span>JD</span>
+        </button>
+      </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-page="dashboard">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="7" height="7" rx="2"/>
+            <rect x="11" y="2" width="7" height="7" rx="2"/>
+            <rect x="2" y="11" width="7" height="7" rx="2"/>
+            <rect x="11" y="11" width="7" height="7" rx="2"/>
+          </svg>
+          <span>Dashboard</span>
+          <span class="count" id="dashboardCount">0</span>
+        </a>
+        <a href="#applied" class="nav-item" data-page="applied">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round"/>
+          </svg>
+          <span>Applied</span>
+          <span class="count" id="appliedCount">0</span>
+        </a>
+        <a href="#waiting" class="nav-item" data-page="waiting">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 8l5-5 5 5M5 12l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Waiting List</span>
+          <span class="count" id="waitingCount">0</span>
+        </a>
+        <a href="#history" class="nav-item" data-page="history">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="10" cy="10" r="8"/>
+            <path d="M10 6v4l3 2" stroke-linecap="round"/>
+          </svg>
+          <span>History</span>
+          <span class="count" id="historyCount">0</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="settings-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="10" cy="10" r="3"/>
+            <path d="M10 1v2m0 14v2M4.22 4.22l1.42 1.42m8.72 8.72l1.42 1.42M1 10h2m14 0h2M4.22 15.78l1.42-1.42m8.72-8.72l1.42-1.42"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <div class="page" id="dashboardPage">
+        <div class="page-header">
+          <div>
+            <h2>Dashboard</h2>
+            <p class="page-subtitle">Fresh job opportunities curated for you</p>
+          </div>
+          <div class="page-actions">
+            <select class="sort-dropdown" id="sortDropdown" aria-label="Sort jobs">
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="company">Company A-Z</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filters-bar" id="filtersBar" style="display: none;">
+          <div class="filter-group">
+            <label>Location</label>
+            <select>
+              <option value="">All Locations</option>
+              <option value="remote">Remote</option>
+              <option value="bangalore">Bangalore</option>
+              <option value="mumbai">Mumbai</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Skills</label>
+            <input type="text" placeholder="e.g. Python, ML" />
+          </div>
+          <button class="btn btn-secondary">Apply Filters</button>
+        </div>
+
+        <div class="jobs-container" id="jobsContainer">
+          <div class="loader" id="loader">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <div class="empty-state" id="emptyStateDashboard" style="display: none;">
+          <svg class="empty-illustration" width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="#F0F0FF"/>
+            <path d="M60 90h80v60H60z" fill="#6C63FF" opacity="0.2"/>
+            <rect x="70" y="70" width="60" height="8" rx="4" fill="#6C63FF"/>
+            <rect x="70" y="100" width="40" height="6" rx="3" fill="#6C63FF" opacity="0.5"/>
+            <rect x="70" y="115" width="50" height="6" rx="3" fill="#6C63FF" opacity="0.5"/>
+          </svg>
+          <h3>No jobs yet</h3>
+          <p>Connect your Gmail or add job sources to see opportunities here</p>
+        </div>
+      </div>
+
+      <div class="page" id="appliedPage" style="display: none;">
+        <div class="page-header">
+          <div>
+            <h2>Applied Jobs</h2>
+            <p class="page-subtitle">Track your job applications</p>
+          </div>
+        </div>
+        <div class="jobs-container" id="appliedContainer"></div>
+        <div class="empty-state" id="emptyStateApplied" style="display: none;">
+          <svg class="empty-illustration" width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="#E8F5E9"/>
+            <path d="M70 100l15 15 30-30" stroke="#4CAF50" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <h3>No applications yet</h3>
+          <p>Jobs you apply to will appear here with tracking status</p>
+        </div>
+      </div>
+
+      <div class="page" id="waitingPage" style="display: none;">
+        <div class="page-header">
+          <div>
+            <h2>Waiting List</h2>
+            <p class="page-subtitle">Jobs you've saved for later</p>
+          </div>
+        </div>
+        <div class="jobs-container" id="waitingContainer"></div>
+        <div class="empty-state" id="emptyStateWaiting" style="display: none;">
+          <svg class="empty-illustration" width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="#FFF3E0"/>
+            <path d="M100 60v40l20 20" stroke="#FF9800" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <h3>No saved jobs yet</h3>
+          <p>Save interesting jobs to review them later</p>
+        </div>
+      </div>
+
+      <div class="page" id="historyPage" style="display: none;">
+        <div class="page-header">
+          <div>
+            <h2>History</h2>
+            <p class="page-subtitle">Denied and expired opportunities</p>
+          </div>
+        </div>
+        <div class="jobs-container" id="historyContainer"></div>
+        <div class="empty-state" id="emptyStateHistory" style="display: none;">
+          <svg class="empty-illustration" width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="#FFEBEE"/>
+            <path d="M75 75l50 50M125 75l-50 50" stroke="#F44336" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+          <h3>No history yet</h3>
+          <p>Denied jobs will appear here</p>
+        </div>
+      </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal" id="applyModal" role="dialog" aria-labelledby="applyModalTitle">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="applyModalTitle">Apply to Job</h3>
+          <button class="modal-close" id="closeApplyModal" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" id="applyModalBody">
+          <p>Are you sure you want to apply to this position?</p>
+          <div class="job-summary" id="applySummary"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelApply">Cancel</button>
+          <button class="btn btn-primary" id="confirmApply">Confirm Application</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="denyModal" role="dialog" aria-labelledby="denyModalTitle">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="denyModalTitle">Deny Job</h3>
+          <button class="modal-close" id="closeDenyModal" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Why are you denying this job?</p>
+          <select class="reason-select" id="denyReason">
+            <option value="not-interested">Not Interested</option>
+            <option value="location">Location Mismatch</option>
+            <option value="salary">Salary Below Expectations</option>
+            <option value="skills">Skills Mismatch</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelDeny">Cancel</button>
+          <button class="btn btn-danger" id="confirmDeny">Deny & Archive</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="api.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
