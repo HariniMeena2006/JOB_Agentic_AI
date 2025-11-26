@@ -29,10 +29,30 @@ def gmail_login():
 
     return build("gmail", "v1", credentials=creds)
 
-def get_latest_emails(service, max_results=10):
-    """Fetch latest emails from Gmail"""
+def get_latest_emails(service, max_results=10, only_unread=True, after_date=None):
+    """Fetch latest emails from Gmail.
+
+    Args:
+        service: Gmail API service instance
+        max_results (int): maximum number of emails to fetch
+        only_unread (bool): if True, fetch only unread emails
+        after_date (str|None): optional date filter in format YYYY/MM/DD
+    """
+
+    # Build Gmail search query
+    query_parts = []
+    if only_unread:
+        query_parts.append("is:unread")
+    if after_date:
+        # Gmail expects YYYY/MM/DD
+        query_parts.append(f"after:{after_date}")
+    query = " ".join(query_parts).strip() or None
+
     results = service.users().messages().list(
-        userId="me", maxResults=max_results
+        userId="me",
+        maxResults=max_results,
+        labelIds=["INBOX"],
+        q=query
     ).execute()
     messages = results.get("messages", [])
 

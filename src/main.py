@@ -11,7 +11,7 @@ def main():
     service = gmail_login()
 
     print("📥 Fetching latest emails...")
-    emails = get_latest_emails(service, max_results=10)
+    emails = get_latest_emails(service, max_results=50)
 
     init_db()
 
