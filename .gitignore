@@ -1,0 +1,20 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables / secrets
+.env
+*.json
+!email_prompt.txt   # (keeps your prompt file)
+
+# Databases / generated output
+*.db
+data/
+src/data/
+output.json
+
+# Credentials
+src/credentials/
