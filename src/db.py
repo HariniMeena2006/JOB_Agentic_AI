@@ -72,3 +72,20 @@ def get_all_jobs():
     if collection is None:
         init_db()
     return list(collection.find({}, {'_id': 0}))
+
+# 🚀 NEW: Delete a job by job_id
+def delete_job(job_id):
+    """Delete a job from MongoDB by job_id. Returns True if deleted."""
+    global collection
+    if collection is None:
+        init_db()
+
+    # Support job_id stored as either string or integer
+    try:
+        int_id = int(job_id)
+    except (ValueError, TypeError):
+        int_id = None
+
+    id_filter = {"job_id": {"$in": [job_id] + ([int_id] if int_id is not None else [])}}
+    res = collection.delete_one(id_filter)
+    return res.deleted_count > 0

@@ -239,6 +239,29 @@
       </div>
     </div>
 
+    <!-- Job Details Modal -->
+    <div class="modal" id="detailsModal" role="dialog" aria-labelledby="detailsModalTitle">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="detailsModalTitle">Job Details</h3>
+          <button class="modal-close" id="closeDetailsModal" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="job-summary" id="detailsSummary">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a id="detailsExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Open Original</a>
+          <button class="btn btn-secondary" id="closeDetails">Close</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal" id="denyModal" role="dialog" aria-labelledby="denyModalTitle">
       <div class="modal-content">
         <div class="modal-header">

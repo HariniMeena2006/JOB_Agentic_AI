@@ -3,6 +3,7 @@ from extract import gmail_login, get_latest_emails
 from db import init_db, save_job
 from field_extractor import extract_fields_from_email, OPTIONAL_FIELDS
 from classifier import classify_email
+import hashlib
 
 MIN_REQUIRED_FIELDS = ["title", "company", "location"]
 
@@ -34,6 +35,16 @@ def main():
         for field in OPTIONAL_FIELDS:
             if field not in result:
                 result[field] = None
+
+        # Step 3.5: Deterministic job_id to avoid duplicates on reruns (always override)
+        gmail_id = email.get("gmail_id") or ""
+        if gmail_id:
+            result["job_id"] = gmail_id
+        else:
+            # Fallback: hash of subject + date
+            h = hashlib.sha256()
+            h.update((email.get("subject", "") + "|" + email.get("date", "")).encode("utf-8"))
+            result["job_id"] = h.hexdigest()[:24]
 
         # Step 4: Save if minimum required fields exist
         if all(result.get(f) for f in MIN_REQUIRED_FIELDS):

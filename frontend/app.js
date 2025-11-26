@@ -1,4 +1,4 @@
-import { getJobs, applyToJob, saveJob, denyJob, updateTrackingStatus, moveJobStatus } from './api.js';
+import { getJobs, applyToJob, saveJob, denyJob, updateTrackingStatus, moveJobStatus, deleteJob } from './api.js';
 
 const STATE = {
   currentPage: 'dashboard',
@@ -33,6 +33,12 @@ function setupEventListeners() {
   document.getElementById('cancelDeny').addEventListener('click', closeDenyModal);
   document.getElementById('confirmDeny').addEventListener('click', confirmDeny);
 
+  // Details modal closers
+  const closeDetailsBtn = document.getElementById('closeDetails');
+  const closeDetailsX = document.getElementById('closeDetailsModal');
+  if (closeDetailsBtn) closeDetailsBtn.addEventListener('click', closeDetailsModal);
+  if (closeDetailsX) closeDetailsX.addEventListener('click', closeDetailsModal);
+
   window.addEventListener('hashchange', handleRouting);
 }
 
@@ -48,6 +54,66 @@ function toggleFilters() {
   } else {
     filtersBar.style.display = 'none';
   }
+}
+
+function closeDetailsModal() {
+  const modal = document.getElementById('detailsModal');
+  if (modal) modal.classList.remove('active');
+  const overlay = document.getElementById('modalOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function openDetailsModal() {
+  const modal = document.getElementById('detailsModal');
+  const overlay = document.getElementById('modalOverlay');
+  if (overlay) overlay.classList.add('active');
+  if (modal) modal.classList.add('active');
+}
+
+function formatMaybe(value, fallback = '—') {
+  return (value === null || value === undefined || value === '') ? fallback : value;
+}
+
+function buildDetailsHtml(job) {
+  const start = formatMaybe(job.start_date);
+  const end = formatMaybe(job.end_date || job.duration);
+  const stipend = formatMaybe(job.stipend);
+  const skills = (job.skills && job.skills.length) ? job.skills.map(s => `<span class="skill-tag">${s}</span>`).join('') : '<span class="job-meta-item">No skills listed</span>';
+  const desc = formatMaybe(job.short_description || job.snippet);
+
+  return `
+    <div class="details-grid">
+      <div class="job-meta">
+        <span class="job-meta-item"><strong>Company:</strong> ${job.company}</span>
+        <span class="job-meta-item"><strong>Location:</strong> ${job.location}</span>
+        <span class="job-meta-item"><strong>Posted:</strong> ${formatDate(job.posted_date)}</span>
+      </div>
+      <h4 style="margin-top: 12px;">${job.job_title}</h4>
+      <div class="job-meta" style="margin-top: 8px;">
+        <span class="job-meta-item"><strong>Start:</strong> ${start}</span>
+        <span class="job-meta-item"><strong>End/Duration:</strong> ${end}</span>
+        <span class="job-meta-item"><strong>Stipend:</strong> ${stipend}</span>
+      </div>
+      <div class="job-skills" style="margin-top: 10px;">${skills}</div>
+      <p class="job-snippet" style="margin-top: 10px;">${desc}</p>
+    </div>
+  `;
+}
+
+function handleViewDetails(e) {
+  e.preventDefault();
+  const jobId = e.currentTarget.dataset.jobId;
+  const job = STATE.jobs.find(j => j.job_id === jobId);
+  if (!job) return;
+
+  const summary = document.getElementById('detailsSummary');
+  const titleEl = document.getElementById('detailsModalTitle');
+  const linkEl = document.getElementById('detailsExternalLink');
+  if (titleEl) titleEl.textContent = `${job.job_title}`;
+  if (summary) summary.innerHTML = buildDetailsHtml(job);
+  if (linkEl) linkEl.href = job.link || '#';
+
+  openDetailsModal();
 }
 
 function handleSearch(e) {
@@ -201,6 +267,9 @@ function createJobCard(job, page) {
   const initials = job.company.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
   const postedDate = formatDate(job.posted_date);
   const statusBadge = getStatusBadge(job);
+  const companyHtml = `<span class="pill-info pill-company">${job.company || 'Unknown'}</span>`;
+  const locationHtml = `<span class="pill-info pill-location">${job.location || '—'}</span>`;
+  const dateHtml = `<span class="pill-info pill-date">${postedDate}</span>`;
 
   let actions = '';
 
@@ -229,6 +298,7 @@ function createJobCard(job, page) {
   } else if (page === 'history') {
     actions = `
       <button class="btn btn-secondary restore-btn" data-job-id="${job.job_id}">Restore to Dashboard</button>
+      <button class="btn btn-ghost delete-btn" data-job-id="${job.job_id}">Delete</button>
     `;
   }
 
@@ -242,9 +312,9 @@ function createJobCard(job, page) {
             ${statusBadge}
           </div>
           <div class="job-meta">
-            <span class="job-meta-item">${job.company}</span>
-            <span class="job-meta-item">${job.location}</span>
-            <span class="job-meta-item">${postedDate}</span>
+            ${companyHtml}
+            ${locationHtml}
+            ${dateHtml}
           </div>
         </div>
       </div>
@@ -254,7 +324,7 @@ function createJobCard(job, page) {
       </div>
       <div class="job-card-actions">
         ${actions}
-        <a href="${job.link}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">View Details</a>
+        <a href="${job.link}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost view-details-btn" data-job-id="${job.job_id}">View Details</a>
       </div>
     </div>
   `;
@@ -316,6 +386,14 @@ function attachJobCardListeners() {
 
   document.querySelectorAll('.restore-btn').forEach(btn => {
     btn.addEventListener('click', handleRestore);
+  });
+  
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', handleDelete);
+  });
+
+  document.querySelectorAll('.view-details-btn').forEach(link => {
+    link.addEventListener('click', handleViewDetails);
   });
 }
 
@@ -462,6 +540,28 @@ async function handleRestore(e) {
     }
   } catch (error) {
     showToast('Error', 'Failed to restore job', 'error');
+  }
+}
+
+async function handleDelete(e) {
+  const jobId = e.currentTarget.dataset.jobId;
+  if (!jobId) return;
+
+  try {
+    const res = await deleteJob(jobId);
+    if (res.success) {
+      // Remove locally
+      const idx = STATE.jobs.findIndex(j => j.job_id === jobId);
+      if (idx !== -1) STATE.jobs.splice(idx, 1);
+
+      showToast('Deleted', 'Job removed permanently', 'info');
+      updateCounts();
+      renderCurrentPage();
+    } else {
+      showToast('Error', res.error || 'Failed to delete job', 'error');
+    }
+  } catch (err) {
+    showToast('Error', 'Failed to delete job', 'error');
   }
 }
 

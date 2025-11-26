@@ -123,3 +123,18 @@ export async function resetDatabase() {
     return { success: false, error: "Backend error" };
   }
 }
+
+
+// -------------------------------
+// DELETE JOB (permanent)
+// -------------------------------
+export async function deleteJob(jobId) {
+  try {
+    const res = await fetch(`${API_BASE}/delete/${jobId}`, {
+      method: "DELETE"
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, error: "Backend error" };
+  }
+}

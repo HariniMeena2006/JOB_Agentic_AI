@@ -82,6 +82,8 @@ def get_latest_emails(service, max_results=10, only_unread=True, after_date=None
         emails.append({
             "subject": subject,
             "date": date,
-            "body": body
+            "body": body,
+            "gmail_id": msg.get("id"),
+            "thread_id": msg_data.get("threadId")
         })
     return emails

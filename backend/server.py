@@ -10,7 +10,7 @@ import json
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Import the MongoDB functions from src/db.py
-from src.db import init_db, get_jobs_by_status, update_job_status, get_all_jobs
+from src.db import init_db, get_jobs_by_status, update_job_status, get_all_jobs, delete_job
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -87,6 +87,13 @@ def transform_job(doc: dict) -> dict:
     location = doc.get('location') or 'Remote'
     skills = _ensure_array(doc.get('skills'))
 
+    # additional optional fields for details modal
+    duration = doc.get('duration')
+    start_date = doc.get('start_date')
+    end_date = doc.get('end_date')
+    stipend = doc.get('stipend')
+    short_description = doc.get('short_description') or (snippet[:200] + '...' if snippet and len(snippet) > 200 else snippet)
+
     # status
     status = doc.get('status') or _map_status(doc.get('application_stage'))
     tracking_status = doc.get('tracking_status')
@@ -101,7 +108,13 @@ def transform_job(doc: dict) -> dict:
         'location': location,
         'skills': skills,
         'status': status,
-        'tracking_status': tracking_status
+        'tracking_status': tracking_status,
+        # extras for details modal
+        'duration': duration,
+        'start_date': start_date,
+        'end_date': end_date,
+        'stipend': stipend,
+        'short_description': short_description
     }
 
 @app.route("/data", methods=["GET"])
@@ -136,6 +149,17 @@ def apply_to_job(job_id):
     if updated_job:
         return jsonify({"success": True, "data": updated_job})
     return jsonify({"success": False, "error": "Job not found"}), 404
+
+# Permanently delete a job
+@app.route("/delete/<string:job_id>", methods=["DELETE"])
+def delete_job_route(job_id):
+    try:
+        ok = delete_job(job_id)
+        if ok:
+            return jsonify({"success": True})
+        return jsonify({"success": False, "error": "Job not found"}), 404
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/save/<string:job_id>", methods=["POST"])
 def save_job_route(job_id):
