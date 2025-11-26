@@ -8,7 +8,7 @@ __pycache__/
 # Environment variables / secrets
 .env
 *.json
-!email_prompt.txt   # (keeps your prompt file)
+
 
 # Databases / generated output
 *.db
